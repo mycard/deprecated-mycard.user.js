@@ -1,10 +1,11 @@
 class HtmlContent
-	self = this
+	partDelimiterRules = [null, '####', '====', '$$$$']
+
 	content = ''
-	contentArray = []	# split by '$$$$'
+	contentArray = []	# split by last delimiter
 	contentArrayLength = 0
 	queue = []
-	parseCallback = null
+	self = parseCallback = null
 
 	###
 	# 内容抓取
@@ -19,7 +20,8 @@ class HtmlContent
 		result = []
 
 		text = contentArray[startLine]
-		rule = [null, '####', '====', null]
+		rule = partDelimiterRules
+		rule[rule.length-1] = null
 		index = 0
 		handles = []
 		
@@ -75,7 +77,7 @@ class HtmlContent
 
 	# 获得干净的数据
 	refine = ()->
-		console.log queue
+		#console.log queue
 		parseCallback queue
 
 	dragOnceOver = (startLine, result)->
@@ -93,7 +95,8 @@ class HtmlContent
 		###
 		drag 0
 	constructor: ()->
+		self = this
 		content = document.body.innerText or document.body.textContent	# TODO: 不考虑textarea和script中?
 		content = content.replace /[\r\n]/g, ''
-		contentArray = content.split '$$$$'
+		contentArray = content.split partDelimiterRules[partDelimiterRules.length-1]
 		contentArrayLength = contentArray.length
