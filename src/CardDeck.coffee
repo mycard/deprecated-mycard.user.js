@@ -1,7 +1,7 @@
 class CardDeck
 	cardPart = 4
 
-	self = bulidCallback = null
+	bulidCallback = null
 
 	# 数组降维
 	tile = (array, result, callback)=>
@@ -27,5 +27,4 @@ class CardDeck
 		console.log @names
 
 	constructor: (data)->
-		self = this
 		@names = data

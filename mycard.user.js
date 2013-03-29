@@ -91,12 +91,12 @@
   })();
 
   CardDeck = (function() {
-    var bulidCallback, cardPart, render, self, tile,
+    var bulidCallback, cardPart, render, tile,
       _this = this;
 
     cardPart = 4;
 
-    self = bulidCallback = null;
+    bulidCallback = null;
 
     tile = function(array, result, callback) {
       var item;
@@ -131,8 +131,7 @@
     };
 
     function CardDeck(data) {
-      this.build = __bind(this.build, this);      self = this;
-      this.names = data;
+      this.build = __bind(this.build, this);      this.names = data;
     }
 
     return CardDeck;
@@ -140,7 +139,7 @@
   }).call(this);
 
   HtmlContent = (function() {
-    var content, contentArray, contentArrayLength, drag, dragOnceOver, filter, parseCallback, partDelimiterRules, queue, refine, self;
+    var content, contentArray, contentArrayLength, drag, dragOnceOver, filter, parseCallback, partDelimiterRules, queue, refine;
 
     partDelimiterRules = [null, '####', '====', '$$$$'];
 
@@ -152,7 +151,7 @@
 
     queue = [];
 
-    self = parseCallback = null;
+    parseCallback = null;
 
     /*
     	# 内容抓取
@@ -256,9 +255,7 @@
 
     dragOnceOver = function(startLine, result) {
       startLine += 1;
-      if (result && result[0]) {
-        queue.push(result);
-      }
+      queue.push(result);
       if (startLine < contentArrayLength) {
         return drag(startLine);
       }
@@ -278,8 +275,7 @@
     };
 
     function HtmlContent() {
-      this.parse = __bind(this.parse, this);      self = this;
-      content = document.body.innerText || document.body.textContent;
+      this.parse = __bind(this.parse, this);      content = document.body.innerText || document.body.textContent;
       content = content.replace(/[\r\n]/g, '');
       contentArray = content.split(partDelimiterRules[partDelimiterRules.length - 1]);
       contentArrayLength = contentArray.length;
@@ -319,6 +315,8 @@
 
         htmlContent = new HtmlContent();
         return htmlContent.parse(function(cardQueue) {
+          console.log(cardQueue);
+          return;
           return Batch(cardQueue, function() {
             return handle(cardQueue);
           });

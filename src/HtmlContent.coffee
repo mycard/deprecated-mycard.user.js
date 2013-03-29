@@ -1,11 +1,11 @@
 class HtmlContent
 	partDelimiterRules = [null, '####', '====', '$$$$']
 
-	content = ''
-	contentArray = []	# split by last delimiter
-	contentArrayLength = 0
+	html = null
+	contextArray = []	# split by last delimiter
+	contextArrayLength = 0
 	queue = []
-	self = parseCallback = null
+	parseCallback = null
 
 	###
 	# 内容抓取
@@ -19,7 +19,7 @@ class HtmlContent
 	drag = (startLine)->
 		result = []
 
-		text = contentArray[startLine]
+		text = contextArray[startLine]
 		rule = partDelimiterRules
 		rule[rule.length-1] = null
 		index = 0
@@ -33,7 +33,7 @@ class HtmlContent
 					recursion()
 			else
 				# 最后一部分的特殊处理
-				filter contentArray[startLine+1], null, null, on, (_res)->
+				filter contextArray[startLine+1], null, null, on, (_res)->
 					result.push _res
 					dragOnceOver startLine, result
 		recursion()
@@ -75,28 +75,29 @@ class HtmlContent
 				result = []
 		callback result
 
-	# 获得干净的数据
+	# 队列包装
 	refine = ()->
-		#console.log queue
+		start = 0
+		for 
 		parseCallback queue
 
 	dragOnceOver = (startLine, result)->
 		startLine += 1
-		queue.push result if result and result[0]
-		return drag startLine if startLine < contentArrayLength
+		queue.push result
+		return drag startLine if startLine < contextArrayLength
 		refine() # All over
 
 
 	parse: (callback)=>
-		return callback off if contentArrayLength is 0
+		return callback off if contextArrayLength is 0
 		parseCallback = callback
 		###
 		# drag -> dragOnceOver -> drag -> ... -> refine -> callback
 		###
 		drag 0
 	constructor: ()->
-		self = this
+		html = document.body.innerHTML
 		content = document.body.innerText or document.body.textContent	# TODO: 不考虑textarea和script中?
 		content = content.replace /[\r\n]/g, ''
-		contentArray = content.split partDelimiterRules[partDelimiterRules.length-1]
-		contentArrayLength = contentArray.length
+		contextArray = content.split partDelimiterRules[partDelimiterRules.length-1]
+		contextArrayLength = contextArray.length
