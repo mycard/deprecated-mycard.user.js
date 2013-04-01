@@ -1,5 +1,4 @@
 $ = null
-cardCache = {}
 
 class Main
 	jQueryPath = 'http://lib.sinaapp.com/js/jquery/1.9.1/jquery-1.9.1.min.js'
@@ -16,7 +15,7 @@ class Main
 		parse =->
 			htmlContent = new HtmlContent()
 			htmlContent.parse (cardQueue)->
-				Batch cardQueue, ()->
+				Card.batchQueryInfo HTMLNode.names, ()->
 					handle cardQueue
 		handle = (cardQueue)->
 			if typeof cardQueue is 'object' and cardQueue.length > 0

@@ -1,103 +1,69 @@
 class HtmlContent
-	partDelimiterRules = [null, '####', '====', '$$$$']
+	block = ['div', 'p', 'article', 'section', '#text']
+	featureString = ['####', '====', '$$$$', null]
+	domTree = breakPoint = null
+	matchQueue = []
 
-	html = null
-	contextArray = []	# split by last delimiter
-	contextArrayLength = 0
-	queue = []
-	parseCallback = null
 
-	###
-	# 内容抓取
-	#
-	# 按 #*4分割(从开始到#*4)
-	# 找到第一个##行
-	# 判断是否为[*]
-	# 同理====以及剩余部分(到$$$$前）
-	# 分析下一个part的开头是否为[*]
-	###
-	drag = (startLine)->
-		result = []
+	# 遍历匹配DOM的子集块元素
+	eachDom = (node, callback)->
+		element = node.content
+		unless element and element.childNodes.length
+			# 没有子元素
+			return callback off
+		for item in element.childNodes
+			continue if block.indexOf(item.nodeName.toLowerCase()) is -1
+			domTree.setChild item, node
+		breakPoint = node
+		eachMatch node.firstChild(), ()->
+			callback on
 
-		text = contextArray[startLine]
-		rule = partDelimiterRules
-		rule[rule.length-1] = null
-		index = 0
-		handles = []
-		
-		recursion = ()->
-			if index < rule.length - 1
-				filter text, rule[index], rule[index+1], off, (_res)->
-					result.push _res
-					index++
-					recursion()
+	eachMatch = (node, callback)->
+		matchLastFeature node, (_break)->
+			return callback() if _break or node.next is null
+			eachMatch node.next, callback
+
+	# 寻找结束特征
+	matchLastFeature = (node, callback)->
+		feature =  featureString[featureString.length-2]
+		element = node.content
+		text = element.innerText or element.textContent
+		if text.indexOf(feature) is -1
+			# 不包含特征
+			return searchBack node, 0, (_res)->
+				callback _res
+		if node.content.childNodes and node.content.childNodes.length
+			eachDom node, (hasChild)->
+				return callback off if hasChild
+
+	# 向上回朔寻找开始特征
+	searchBack = (node, layer, callback)->
+		layer++
+		node = node.parent
+		if node.parent is null
+			return callback off
+		text = node.content.innerText or node.content.textContent
+		if text.indexOf(featureString[0]) is -1
+			if node is breakPoint
+				callback off
 			else
-				# 最后一部分的特殊处理
-				filter contextArray[startLine+1], null, null, on, (_res)->
-					result.push _res
-					dragOnceOver startLine, result
-		recursion()
+				searchBack node, layer, callback
+		else
+			record node, layer, ()->
+				callback on
 
-	# 筛选字符串组
-	filter = (text, startDelimiter, endDelimiter, fromFront, callback)->
-		matchLine = (line, fromFront)->
-			reg = if fromFront then /^\[(.*)\]/ else /\[(.*)\]$/
-			m = reg.exec line.trim()
-			return if m then m[1] else off
-
-		text = text.trim() if typeof text is 'string'
-		return callback '' unless text
-
-		start = if startDelimiter then (text.indexOf(startDelimiter) + startDelimiter.length) else 0
-		end = if endDelimiter then text.indexOf(endDelimiter) else text.length
-		text = text.substr start, end - start
-		return callback '' unless text
-
-		data = text.split '##'
-		result = []
-		# 匹配前部
-		if fromFront
-			for line in data
-				line = line.trim()
-				continue unless line
-				_r = matchLine line, on
-				break unless _r
-				result.push _r
-			return callback result
-		# 匹配后部
-		for line in data
-			line = line.trim()
-			continue unless line
-			_r = matchLine line
-			if _r
-				result.push _r
-			else
-				result = []
-		callback result
-
-	# 队列包装
-	refine = ()->
-		start = 0
-		for 
-		parseCallback queue
-
-	dragOnceOver = (startLine, result)->
-		startLine += 1
-		queue.push result
-		return drag startLine if startLine < contextArrayLength
-		refine() # All over
-
+	# 判断节点是不是要找的节点，若是则记录第一个匹配节点
+	record = (node, layer, callback)->
+		console.log node.content
+		htmlNode = new HTMLNode node.content, layer
+		htmlNode.parse ()->
+			matchQueue.push htmlNode if htmlNode.isMatching
+			callback()
 
 	parse: (callback)=>
-		return callback off if contextArrayLength is 0
-		parseCallback = callback
-		###
-		# drag -> dragOnceOver -> drag -> ... -> refine -> callback
-		###
-		drag 0
+		window.domTree = domTree = new Tree document.body
+		eachDom domTree.root, (res)->
+			callback matchQueue
+				
 	constructor: ()->
-		html = document.body.innerHTML
-		content = document.body.innerText or document.body.textContent	# TODO: 不考虑textarea和script中?
-		content = content.replace /[\r\n]/g, ''
-		contextArray = content.split partDelimiterRules[partDelimiterRules.length-1]
-		contextArrayLength = contextArray.length
+		true
