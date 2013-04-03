@@ -59,8 +59,8 @@ class Card
 	atk: null
 	def: null
 	description: null
-	@image
-	@thumb
+	image: null
+	thumb: null
 	constructor: (card, info)->
 		i=0
 		while info.type

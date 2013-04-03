@@ -32,6 +32,7 @@ class HTMLNode
 			nodeArray = tmpArray
 
 		startNode = null
+		console.log nodeArray
 		for item in nodeArray
 			text = item.innerText or item.textContent
 			text = text.trim()
