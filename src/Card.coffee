@@ -15,9 +15,9 @@ class Card
 		if typeof names is 'object' and names.length > 0
 			# 过滤重复项
 			names.splice i, 1 unless names[i] for i in [0...names.length]
-			data = JSON.stringify "name":
+			data = "name":
 				"$in": names
-
+			data = JSON.stringify data				
 			$.getJSON apiUrl,
 				q: data
 			, (res)=>
@@ -74,9 +74,11 @@ class Card
 		@alias = info.alias
 		@name = card.name
 		@category = category
-		@card_type = card_type
+		@card_type = lang.get 'card_type', card_type
 		@type = (i = 0; (i++ until info.race >> i & 1); types[i]) if info.race
+		@type = lang.get 'type', @type
 		@attribute = (i = 0; (i++ until info.attribute >> i & 1); _attributes[i]) if info.attribute
+		@attribute = lang.get 'attribute', @attribute
 		@level = info.level if info.attribute
 		@atk = info.atk if info.attribute
 		@def = info.def if info.attribute

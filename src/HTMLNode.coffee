@@ -2,7 +2,7 @@ class HTMLNode
 	self = null
 	@names = []
 
-	block = ['div', 'p', 'article', 'section', '#text']
+	block = ['div', 'p', 'article', 'section', '#text', 'table', 'tr', 'tbody', 'td']
 	featureString = ['####', '====', '$$$$', null]
 
 	nodeText: null
@@ -30,9 +30,7 @@ class HTMLNode
 					continue if block.indexOf(child.nodeName.toLowerCase()) is -1
 					tmpArray.push child
 			nodeArray = tmpArray
-
 		startNode = null
-		console.log nodeArray
 		for item in nodeArray
 			text = item.innerText or item.textContent
 			text = text.trim()
@@ -105,10 +103,10 @@ class HTMLNode
 						@deck = deck
 						@isMatching = on
 						setNams @cards
-						callback()
+						callback on
 		catch e
 			console.log e
-			callback()
+			callback off
 
 	constructor: (node, layer)->
 		self = this

@@ -1,0 +1,2 @@
+#!/bin/sh
+coffee -cwj mycard.user.js src/*.coffee
