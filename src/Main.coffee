@@ -1,9 +1,4 @@
 $ = null
-unless console
-	console =
-		log: ()->
-		info: ()->
-
 class Main
 	jQueryPath = 'http://lib.sinaapp.com/js/jquery/1.9.1/jquery-1.9.1.min.js'
 	load = (path, callback)->
@@ -15,7 +10,7 @@ class Main
 		document.body.appendChild scriptElement		
 
 	start: ()=>
-		$ = jQuery
+		$ = window.jQuery
 		parse =->
 			htmlContent = new HtmlContent()
 			htmlContent.parse (cardQueue)->
@@ -29,20 +24,19 @@ class Main
 			cardDeck = new CardDeck data
 			cardDeck.build callback
 		$ ()->
+			unless window.console
+				# for IE
+				window.console =
+					log: ()->
+					info: ()->
 			parse()
 
 	constructor: ()->
-		if typeof jQuery isnt 'undefined'
+		if typeof window.jQuery isnt 'undefined'
 			@start()
 		else
 			load jQueryPath, ()=>
-				start = ()=>
-					jQuery.noConflict()
-					@start()
-				return start() if typeof jQuery isnt 'undefined'
-				p = setInterval ()=>
-					if typeof jQuery isnt 'undefined'
-						start()
-						clearInterval p
+				window.jQuery.noConflict()
+				@start()
 
 this.myCardUserJS ?= new Main()
