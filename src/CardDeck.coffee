@@ -36,6 +36,7 @@ class CardDeck
 		sider = $('<div></div>').css
 			'float':  'right'
 			'width': '300px'
+			'height': '330px'
 			'position': 'relative'
 		siderNameBox = $('<div></div>').css
 			'width': '300px'

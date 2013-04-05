@@ -235,6 +235,7 @@
       sider = $('<div></div>').css({
         'float': 'right',
         'width': '300px',
+        'height': '330px',
         'position': 'relative'
       });
       siderNameBox = $('<div></div>').css({
@@ -859,8 +860,21 @@
         this.start();
       } else {
         load(jQueryPath, function() {
-          jQuery.noConflict();
-          return _this.start();
+          var p, start;
+
+          start = function() {
+            jQuery.noConflict();
+            return _this.start();
+          };
+          if (typeof jQuery !== 'undefined') {
+            return start();
+          }
+          return p = setInterval(function() {
+            if (typeof jQuery !== 'undefined') {
+              start();
+              return clearInterval(p);
+            }
+          });
         });
       }
     }

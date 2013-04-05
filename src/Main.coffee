@@ -36,7 +36,13 @@ class Main
 			@start()
 		else
 			load jQueryPath, ()=>
-				jQuery.noConflict()
-				@start()
+				start = ()=>
+					jQuery.noConflict()
+					@start()
+				return start() if typeof jQuery isnt 'undefined'
+				p = setInterval ()=>
+					if typeof jQuery isnt 'undefined'
+						start()
+						clearInterval p
 
 this.myCardUserJS ?= new Main()
