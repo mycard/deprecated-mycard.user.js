@@ -1,0 +1,22 @@
+{
+    "name": "mycard",
+    "description": "mycard for chrome",
+    "version": "0.0.0.3",
+    "icons": {
+        "128": "icon_128.png",
+        "256": "icon_256.png"
+    },
+    "app": {
+        "launch": {
+            "local_path": "main.html"
+        }
+    },
+    "content_scripts": [
+        {
+            "matches": ["*://nwbbs.com/*"],
+            "js": ["mycard.user.js"]
+        }
+    ],
+    "manifest_version": 2,
+    "permissions": [ "unlimitedStorage", "notifications" ]
+}
