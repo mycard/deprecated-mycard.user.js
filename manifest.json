@@ -1,15 +1,11 @@
 {
-    "name": "mycard",
-    "description": "mycard for chrome",
+    "name": "mycard extension",
+    "description": "mycard extension for chrome",
     "version": "0.0.0.3",
     "icons": {
-        "128": "icon_128.png",
-        "256": "icon_256.png"
-    },
-    "app": {
-        "launch": {
-            "local_path": "main.html"
-        }
+        "16": "icon_16.png",
+        "48": "icon_48.png",
+        "128": "icon_128.png"
     },
     "content_scripts": [
         {
@@ -17,6 +13,5 @@
             "js": ["mycard.user.js"]
         }
     ],
-    "manifest_version": 2,
-    "permissions": [ "unlimitedStorage", "notifications" ]
+    "manifest_version": 2
 }

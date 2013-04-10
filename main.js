@@ -1,1 +1,0 @@
-location.href = 'http://my-card.in/rooms'
