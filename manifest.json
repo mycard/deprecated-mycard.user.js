@@ -1,17 +1,11 @@
-{
-    "name": "mycard extension",
-    "description": "mycard extension for chrome",
-    "version": "0.0.0.3",
-    "icons": {
-        "16": "icon_16.png",
-        "48": "icon_48.png",
-        "128": "icon_128.png"
-    },
-    "content_scripts": [
-        {
-            "matches": ["*://nwbbs.com/*"],
-            "js": ["mycard.user.js"]
-        }
-    ],
-    "manifest_version": 2
+{ 
+    "name": "手抄网卡名翻译", 
+    "version": "1.0", 
+	"description": "作者：科学PK上帝 数据：247321453",  
+	"manifest_version": 2,
+    "content_scripts": [ { 
+      "js": [ "jquery-1.9.0.min.js","name.js","ocg.js" ], 
+      "matches": [ "http://ocg.xpg.jp/*"], 
+      "run_at": "document_start" 
+   } ] 
 }
