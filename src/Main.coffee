@@ -1,6 +1,4 @@
-$ = null
 class Main
-	jQueryPath = 'http://lib.sinaapp.com/js/jquery/1.9.1/jquery-1.9.1.min.js'
 	load = (path, callback)->
 		scriptElement = document.createElement 'script'
 		scriptElement.type = 'text/javascript'
@@ -10,7 +8,6 @@ class Main
 		document.body.appendChild scriptElement		
 
 	start: ()=>
-		$ = window.jQuery
 		parse =->
 			htmlContent = new HtmlContent()
 			htmlContent.parse (cardQueue)->
@@ -32,11 +29,10 @@ class Main
 			parse()
 
 	constructor: ()->
-		if typeof window.jQuery isnt 'undefined'
-			@start()
-		else
-			load jQueryPath, ()=>
-				window.jQuery.noConflict()
+		p = setInterval ()=>
+			if jQuery
 				@start()
+				clearInterval p
+		, 10
 
 this.myCardUserJS ?= new Main()

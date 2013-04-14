@@ -16,83 +16,28 @@ class CardDeck
 			type = field.attr 'card-title'
 			field.html info[type]
 		siderDescriptionBox.html info.description
-	render = (panel, position)->
-		if position.left + 828 > document.documentElement.clientWidth
-			position.left = if document.documentElement.clientWidth > 0 then (document.documentElement.clientWidth - 828) else 0
+
+	loadImageError = (img)->
+
+
+	render = (panel, position, callback)->
+		clientWidth = document.documentElement.clientWidth
+		if position.left + 828 > clientWidth
+			position.left = if clientWidth > 0 then (clientWidth - 828) else 0
 		# 构造容器
-		container = $('<div></div>').css
-			'position': 'absolute'
+		container = $('<div></div>').css Style.container
+		container.css
 			'top': "#{position.top}px"
 			'left': "#{position.left}px"
-			'width': '818px'
-			'background': '#FFFFFF'
-			'padding': '4px'
-			'margin': '4px'
-			'bordder': '2px solid #CCCCCC'
-			'border-radius': '4px'
-			'box-shadow': '0 0 4px #CCCCCC'
 
 		# 构造边栏
-		sider = $('<div></div>').css
-			'float':  'right'
-			'width': '300px'
-			'height': '330px'
-			'position': 'relative'
-		siderNameBox = $('<div></div>').css
-			'width': '300px'
-			'height': 'auto'
-			'padding': '8px 0'
-			'margin': 0
-			'font-weight': 'bold'
-			'text-shadow': '1px 1px 2px #ccc'
-			'font-size': '24px'
-			'text-align': 'center'
-			'background': '#eee'
-			'height': '29px'
-		siderImageBox = $('<div><img src="http://my-card.in/assets/images/decks/card.jpg" width="130" height="187" /></div>').css
-			'margin': '10px 0 0 10px'
-			'height': 'auto'
-			'width': 'auto'
-			'float': 'left'
-		siderInfoBox = $('<div></div>').css
-			'width': '135px'
-			'height': '180px'
-			'padding': '15px 5px 5px 5px'
-			'margin': '7px 0 0 10px'
-			'float': 'left'
-		siderInfoItemName = $('<div></div>').css
-			'width': '60px'
-			'height': '14px'
-			'line-height': '14px'
-			'padding-bottom': '5px'
-			'margin-bottom': '10px'
-			'color': '#ffad6e'
-			'font-size': '12px'
-			'text-shadow': '1px 1px 2px #eee'
-			'border-bottom': '1px dashed #ccc'
-			'float': 'left'
-		siderInfoItemContent = $('<div class="mycard-info-item"></div>').css
-			'width': '75px'
-			'height': '14px'
-			'padding-bottom': '5px'
-			'margin-bottom': '10px'
-			'font-size': '12px'
-			'color': 'thead_bg#999999'
-			'text-shadow': '1px 1px 2px #eee'
-			'border-bottom': '1px dashed #ccc'
-			'white-space': 'nowrap'
-			'text-overflow': 'ellipsis'
-			'overflow': 'hidden'
-			'float': 'left'
-		siderDescriptionBox = $('<div></div>').css
-			'border-bottom': '1px solid #CCCCCC'
-			'border-top': '1px solid #CCCCCC'
-			'height': '370px'
-			'margin': '15px 0 0'
-			'padding': '10px'
-			'width': '280px'
-			'color': '#999999'
-			'float': 'left'
+		sider = $('<div></div>').css Style.sider
+		siderNameBox = $('<div></div>').css Style.siderNameBox
+		siderImageBox = $('<div><img src="http://my-card.in/assets/images/decks/card.jpg" width="130" height="187" /></div>').css Style.siderImageBox
+		siderInfoBox = $('<div></div>').css Style.siderInfoBox
+		siderInfoItemName = $('<div></div>').css Style.siderInfoItemName
+		siderInfoItemContent = $('<div class="mycard-info-item"></div>').css Style.siderInfoItemContent
+		siderDescriptionBox = $('<div></div>').css Style.siderDescriptionBox
 
 		for info in infoNames 
 			nameElement = siderInfoItemName.clone().html info[0]
@@ -105,48 +50,51 @@ class CardDeck
 		sider.append siderInfoBox
 		sider.append siderDescriptionBox
 
-		# 构造4个卡组
-		main = $('<div></div>').css
-			'float':  'left'
-			'position': 'relative'
-		for i in [0...4]
+		# 构造主体
+		main = $('<div></div>').css Style.main
+
+		# 构造操作栏
+		operaPanel = $('<div></div>').css Style.operaPanel
+		# 这是什么
+		operaWhatsThis = $('<a>?</a>').css(Style.operaIco).attr
+			'href': 'http://my-card.in/mycard/mycard.user.js.html'
+			'target': '_blank'
+		# 分享
+		operaShare = $('<a></a>').css(Style.operaIco).css('background': 'none')
+		operaShare.append $ '<img src="http://my-card.in/assets/images/decks/share.png" alt="" title="分享" width="24" />'
+		# 在ygopro中打开
+		operaYgopro = $('<a></a>').css(Style.operaIco).css('background': 'none')
+		operaYgopro.append $ '<img class="mycard_ope" src="http://my-card.in/assets/images/decks/ygopro.png" alt="" title="在ygopro中打开 (需要安装mycard)" width="24" />'
+		# 下载(ocgsoft格式)
+		# 下载(ygopro格式)
+		# 卡组编辑器链接
+
+		main.append operaPanel
+
+		# 构造卡组区
+		for i in [0...panelNames.length]
 			continue unless panel[i] and panel[i].length
-			fieldset = $('<fieldset></fieldset>').css
-				'width': '500px'
-				'height': '295px'
-				'background': '#F9F9F9'
-				'border-radius': '6px'
-				'color': '#666666'
-				'font-size': '12px'
-				'margin': '14px 0 0'
-				'padding': '5px'
-			legend = $("<legend>#{panelNames[i]}<small>(#{panel[i].length})</small></legend>").css
-				'color': '#666666'
-				'font-size': '14px'
-				'margin-left': '8px'
-			legend.children('small').attr 'font-size', '10px'
-			deckPart = $('<div></div>').attr
+			fieldset = $('<fieldset></fieldset>').css Style.fieldset
+			legend = $("<legend>#{panelNames[i]}<small>(#{panel[i].length})</small></legend>").css Style.legend
+			legend.children('small').css 'font-size', '10px'
+			deckPart = $('<div></div>').css
 				'margin': '0 -3px 0 -3px'
 			for card in panel[i]
-				img = $('<img />').attr
-					'width': '44'
-					'height': '64'
-					'src': card.thumb
-				.css
-					'float': 'left'
-					'margin': '0 3px 8px 3px'
-					'overflow': 'visible'
-				deckPart.append img
+				img = $("<img width=\"44\" height=\"64\" src=\"#{card.thumb}test\" alt=\"#{card.name}\" />").css Style.cardImage
+				url = "http://my-card.in/cards/#{card.name}"
+				$("<a title=\"#{card.name}\" href=\"#{url}\" target=\"_blank\"></a>").append(img).appendTo deckPart
 				img.data 'info', card
 				img.bind 'mouseenter', ()->
 					cardChange $ this
+				img.bind 'error', ()->
+					loadImageError this
 			fieldset.append legend
 			fieldset.append deckPart
 			main.append fieldset
 		container.append main
 		container.append sider
 		$('body').append container
-
+		callback container.height()
 
 	panel: []
 	data: null
@@ -158,6 +106,8 @@ class CardDeck
 			for name in deck
 				tmp.push Card.cardCache[name] if Card.cardCache[name]
 			@panel.push tmp
-		render @panel, position
+		render @panel, position, (containerHeight)=>
+			@data.startNode.before $("<div style=\"height:#{containerHeight}px;\"></div>")
+
 	constructor: (data)->
 		@data = data
