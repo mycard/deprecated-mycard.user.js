@@ -19,8 +19,31 @@ class CardDeck
 
 	loadImageError = (img)->
 
+	getDeckName =->
+		title = $('title').text()
+		split = /[,\.\-_\s]/
+		title.substr 0, title.indexOf title.match split
+	getCardUsage = (data)->
+		encodeKey = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_='
+		result = ''
+		prev_card = null
+		count = 0
+		for panel_index in [0...3]
+			for card in data[panel_index]
+				if card is prev_card
+					count++
+					continue
+				card_usage =
+					card_id: card.id
+					side: panel_index is 1
+					count: count
+				count = 0
+				prev_card = card
+				c = card_usage.side << 29 | card_usage.count << 27 | card_usage.card_id
+				result += encodeKey.charAt((c >> i * 6) & 0x3F) for i in [4..0]
+		result
 
-	render = (panel, position, callback)->
+	render = (panel, position, deckName, cardUsage, callback)->
 		clientWidth = document.documentElement.clientWidth
 		if position.left + 828 > clientWidth
 			position.left = if clientWidth > 0 then (clientWidth - 828) else 0
@@ -55,20 +78,64 @@ class CardDeck
 
 		# 构造操作栏
 		operaPanel = $('<div></div>').css Style.operaPanel
+		# 卡组编辑器链接
+		operaNewTab = $('<a></a>').css(Style.operaIco).css('background', 'none')
+		$('<img />').appendTo(operaNewTab).attr
+			src: 'http://my-card.in/assets/images/decks/search.png'
+			alt: '' 
+			width: '24'
+		operaNewTab.attr
+			href: "https://my-card.in/decks?name=#{deckName}&cards=#{cardUsage}"
+			title: '在卡组编辑器中打开'
+			target: '_blank'
+		# 下载(ygopro格式)
+		operaDownYdk = $('<a></a>').css(Style.operaIco).css('background', 'none')
+		$('<img />').appendTo(operaDownYdk).attr
+			src: 'http://my-card.in/assets/images/decks/download_ydk.png'
+			alt: 'download ygopro格式'
+			width: '24'
+		operaDownYdk.attr
+			href: "https://my-card.in/decks.ydk?name=#{deckName}&cards=#{cardUsage}"
+			title: '下载(ygopro格式)'
+			target: '_blank'
+		# 下载(ocgsoft格式)
+		operaDownDeck = $('<a></a>').css(Style.operaIco).css('background', 'none')
+		$('<img />').appendTo(operaDownDeck).attr
+			src: 'http://my-card.in/assets/images/decks/download_deck.png'
+			alt: 'download ocgsoft'
+			width: '24'
+		operaDownDeck.attr
+			href: "https://my-card.in/decks.deck?name=#{deckName}&cards=#{cardUsage}"
+			title: '下载(ocgsoft格式)'
+			target: '_blank'
+		# 在ygopro中打开
+		operaYgopro = $('<a></a>').css(Style.operaIco).css('background', 'none')
+		$('<img />').appendTo(operaYgopro).attr
+			src: 'http://my-card.in/assets/images/decks/ygopro.png'
+			alt: ''
+			width: '24'
+		operaYgopro.attr
+			href: "mycard://my-card.in/decks.ydk?name=#{deckName}&cards=#{cardUsage}"
+			title: '在ygopro中打开 (需要安装mycard)'
+			target: '_blank'
+		# 分享
+		operaShare = $('<a></a>').css(Style.operaIco).css('background', 'none')
+		$('<img />').appendTo(operaShare).attr
+			src: 'http://my-card.in/assets/images/decks/share.png'
+			alt: ''
+			title: '分享'
+			width: '24'
 		# 这是什么
 		operaWhatsThis = $('<a>?</a>').css(Style.operaIco).attr
 			'href': 'http://my-card.in/mycard/mycard.user.js.html'
 			'target': '_blank'
-		# 分享
-		operaShare = $('<a></a>').css(Style.operaIco).css('background': 'none')
-		operaShare.append $ '<img src="http://my-card.in/assets/images/decks/share.png" alt="" title="分享" width="24" />'
-		# 在ygopro中打开
-		operaYgopro = $('<a></a>').css(Style.operaIco).css('background': 'none')
-		operaYgopro.append $ '<img class="mycard_ope" src="http://my-card.in/assets/images/decks/ygopro.png" alt="" title="在ygopro中打开 (需要安装mycard)" width="24" />'
-		# 下载(ocgsoft格式)
-		# 下载(ygopro格式)
-		# 卡组编辑器链接
 
+		operaPanel.append operaNewTab
+		operaPanel.append operaDownYdk
+		operaPanel.append operaDownDeck
+		operaPanel.append operaYgopro
+		operaPanel.append operaShare
+		operaPanel.append operaWhatsThis
 		main.append operaPanel
 
 		# 构造卡组区
@@ -80,7 +147,14 @@ class CardDeck
 			deckPart = $('<div></div>').css
 				'margin': '0 -3px 0 -3px'
 			for card in panel[i]
-				img = $("<img width=\"44\" height=\"64\" src=\"#{card.thumb}test\" alt=\"#{card.name}\" />").css Style.cardImage
+				img = $("<img />")
+				img.attr
+					width: '44'
+					height: '64'
+					src: card.thumb
+					alt: card.name
+					title: ''
+				img.css Style.cardImage
 				url = "http://my-card.in/cards/#{card.name}"
 				$("<a title=\"#{card.name}\" href=\"#{url}\" target=\"_blank\"></a>").append(img).appendTo deckPart
 				img.data 'info', card
@@ -96,7 +170,7 @@ class CardDeck
 		$('body').append container
 		callback container.height()
 
-	panel: []
+	panel: []	# 4个卡区的数据
 	data: null
 	build: (callback)=>
 		return callback() unless @data.isMatching
@@ -106,7 +180,7 @@ class CardDeck
 			for name in deck
 				tmp.push Card.cardCache[name] if Card.cardCache[name]
 			@panel.push tmp
-		render @panel, position, (containerHeight)=>
+		render @panel, position, getDeckName(), getCardUsage(@panel), (containerHeight)=>
 			@data.startNode.before $("<div style=\"height:#{containerHeight}px;\"></div>")
 
 	constructor: (data)->

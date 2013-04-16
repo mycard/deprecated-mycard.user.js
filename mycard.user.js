@@ -198,7 +198,7 @@
   }).call(this);
 
   CardDeck = (function() {
-    var cardChange, infoNames, loadImageError, panelNames, render, siderDescriptionBox, siderImageBox, siderInfoFields, siderNameBox;
+    var cardChange, getCardUsage, getDeckName, infoNames, loadImageError, panelNames, render, siderDescriptionBox, siderImageBox, siderInfoFields, siderNameBox;
 
     panelNames = ['主卡组', '副卡组', '额外卡组', '临时卡组'];
 
@@ -224,8 +224,47 @@
 
     loadImageError = function(img) {};
 
-    render = function(panel, position, callback) {
-      var card, clientWidth, container, contentElement, deckPart, fieldset, i, img, info, legend, main, nameElement, operaPanel, operaShare, operaWhatsThis, operaYgopro, sider, siderInfoBox, siderInfoItemContent, siderInfoItemName, url, _i, _j, _k, _len, _len1, _ref, _ref1;
+    getDeckName = function() {
+      var split, title;
+
+      title = $('title').text();
+      split = /[,\.\-_\s]/;
+      return title.substr(0, title.indexOf(title.match(split)));
+    };
+
+    getCardUsage = function(data) {
+      var c, card, card_usage, count, encodeKey, i, panel_index, prev_card, result, _i, _j, _k, _len, _ref;
+
+      encodeKey = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_=';
+      result = '';
+      prev_card = null;
+      count = 0;
+      for (panel_index = _i = 0; _i < 3; panel_index = ++_i) {
+        _ref = data[panel_index];
+        for (_j = 0, _len = _ref.length; _j < _len; _j++) {
+          card = _ref[_j];
+          if (card === prev_card) {
+            count++;
+            continue;
+          }
+          card_usage = {
+            card_id: card.id,
+            side: panel_index === 1,
+            count: count
+          };
+          count = 0;
+          prev_card = card;
+          c = card_usage.side << 29 | card_usage.count << 27 | card_usage.card_id;
+          for (i = _k = 4; _k >= 0; i = --_k) {
+            result += encodeKey.charAt((c >> i * 6) & 0x3F);
+          }
+        }
+      }
+      return result;
+    };
+
+    render = function(panel, position, deckName, cardUsage, callback) {
+      var card, clientWidth, container, contentElement, deckPart, fieldset, i, img, info, legend, main, nameElement, operaDownDeck, operaDownYdk, operaNewTab, operaPanel, operaShare, operaWhatsThis, operaYgopro, sider, siderInfoBox, siderInfoItemContent, siderInfoItemName, url, _i, _j, _k, _len, _len1, _ref, _ref1;
 
       clientWidth = document.documentElement.clientWidth;
       if (position.left + 828 > clientWidth) {
@@ -257,18 +296,67 @@
       sider.append(siderDescriptionBox);
       main = $('<div></div>').css(Style.main);
       operaPanel = $('<div></div>').css(Style.operaPanel);
+      operaNewTab = $('<a></a>').css(Style.operaIco).css('background', 'none');
+      $('<img />').appendTo(operaNewTab).attr({
+        src: 'http://my-card.in/assets/images/decks/search.png',
+        alt: '',
+        width: '24'
+      });
+      operaNewTab.attr({
+        href: "https://my-card.in/decks?name=" + deckName + "&cards=" + cardUsage,
+        title: '在卡组编辑器中打开',
+        target: '_blank'
+      });
+      operaDownYdk = $('<a></a>').css(Style.operaIco).css('background', 'none');
+      $('<img />').appendTo(operaDownYdk).attr({
+        src: 'http://my-card.in/assets/images/decks/download_ydk.png',
+        alt: 'download ygopro格式',
+        width: '24'
+      });
+      operaDownYdk.attr({
+        href: "https://my-card.in/decks.ydk?name=" + deckName + "&cards=" + cardUsage,
+        title: '下载(ygopro格式)',
+        target: '_blank'
+      });
+      operaDownDeck = $('<a></a>').css(Style.operaIco).css('background', 'none');
+      $('<img />').appendTo(operaDownDeck).attr({
+        src: 'http://my-card.in/assets/images/decks/download_deck.png',
+        alt: 'download ocgsoft',
+        width: '24'
+      });
+      operaDownDeck.attr({
+        href: "https://my-card.in/decks.deck?name=" + deckName + "&cards=" + cardUsage,
+        title: '下载(ocgsoft格式)',
+        target: '_blank'
+      });
+      operaYgopro = $('<a></a>').css(Style.operaIco).css('background', 'none');
+      $('<img />').appendTo(operaYgopro).attr({
+        src: 'http://my-card.in/assets/images/decks/ygopro.png',
+        alt: '',
+        width: '24'
+      });
+      operaYgopro.attr({
+        href: "mycard://my-card.in/decks.ydk?name=" + deckName + "&cards=" + cardUsage,
+        title: '在ygopro中打开 (需要安装mycard)',
+        target: '_blank'
+      });
+      operaShare = $('<a></a>').css(Style.operaIco).css('background', 'none');
+      $('<img />').appendTo(operaShare).attr({
+        src: 'http://my-card.in/assets/images/decks/share.png',
+        alt: '',
+        title: '分享',
+        width: '24'
+      });
       operaWhatsThis = $('<a>?</a>').css(Style.operaIco).attr({
         'href': 'http://my-card.in/mycard/mycard.user.js.html',
         'target': '_blank'
       });
-      operaShare = $('<a></a>').css(Style.operaIco).css({
-        'background': 'none'
-      });
-      operaShare.append($('<img src="http://my-card.in/assets/images/decks/share.png" alt="" title="分享" width="24" />'));
-      operaYgopro = $('<a></a>').css(Style.operaIco).css({
-        'background': 'none'
-      });
-      operaYgopro.append($('<img class="mycard_ope" src="http://my-card.in/assets/images/decks/ygopro.png" alt="" title="在ygopro中打开 (需要安装mycard)" width="24" />'));
+      operaPanel.append(operaNewTab);
+      operaPanel.append(operaDownYdk);
+      operaPanel.append(operaDownDeck);
+      operaPanel.append(operaYgopro);
+      operaPanel.append(operaShare);
+      operaPanel.append(operaWhatsThis);
       main.append(operaPanel);
       for (i = _j = 0, _ref = panelNames.length; 0 <= _ref ? _j < _ref : _j > _ref; i = 0 <= _ref ? ++_j : --_j) {
         if (!(panel[i] && panel[i].length)) {
@@ -283,7 +371,15 @@
         _ref1 = panel[i];
         for (_k = 0, _len1 = _ref1.length; _k < _len1; _k++) {
           card = _ref1[_k];
-          img = $("<img width=\"44\" height=\"64\" src=\"" + card.thumb + "test\" alt=\"" + card.name + "\" />").css(Style.cardImage);
+          img = $("<img />");
+          img.attr({
+            width: '44',
+            height: '64',
+            src: card.thumb,
+            alt: card.name,
+            title: ''
+          });
+          img.css(Style.cardImage);
           url = "http://my-card.in/cards/" + card.name;
           $("<a title=\"" + card.name + "\" href=\"" + url + "\" target=\"_blank\"></a>").append(img).appendTo(deckPart);
           img.data('info', card);
@@ -328,7 +424,7 @@
         }
         this.panel.push(tmp);
       }
-      return render(this.panel, position, function(containerHeight) {
+      return render(this.panel, position, getDeckName(), getCardUsage(this.panel), function(containerHeight) {
         return _this.data.startNode.before($("<div style=\"height:" + containerHeight + "px;\"></div>"));
       });
     };
@@ -914,11 +1010,12 @@
       'margin-top': '6px'
     },
     operaIco: {
-      'float': 'right',
+      'float': 'left',
       'height': '25px',
       'width': '25px',
-      'background': 'http://my-card.in/assets/images/decks/download_out.png',
-      'mar-right': '6px',
+      'background': 'url("http://my-card.in/assets/images/decks/download_out.png")',
+      'line-height': '25px',
+      'margin-right': '6px',
       'overflow': 'hidden',
       'display': 'block',
       'text-align': 'center',
