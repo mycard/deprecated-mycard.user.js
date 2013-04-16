@@ -14,5 +14,3 @@ npm install -g grunt
 ```
 grunt
 ```
-
-##TODO
