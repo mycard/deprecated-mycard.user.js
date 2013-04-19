@@ -1,3 +1,4 @@
+dialog = null
 class Main
 	load = (path, callback)->
 		scriptElement = document.createElement 'script'
@@ -8,6 +9,10 @@ class Main
 		document.body.appendChild scriptElement		
 
 	start: ()=>
+		dialog = new kDialog
+			hasOverlay: on
+			width: 560
+			height: 280
 		parse =->
 			htmlContent = new HtmlContent()
 			htmlContent.parse (cardQueue)->

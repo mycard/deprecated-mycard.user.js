@@ -8,7 +8,7 @@
 // ==/UserScript==
 
 (function() {
-  var Card, CardDeck, HTMLNode, HtmlContent, Leaf, Main, Style, Tree, lang, _ref,
+  var Card, CardDeck, HTMLNode, HtmlContent, Leaf, Main, Style, Tree, dialog, lang, _ref,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
   Card = (function() {
@@ -198,7 +198,7 @@
   }).call(this);
 
   CardDeck = (function() {
-    var cardChange, getCardUsage, getDeckName, infoNames, loadImageError, panelNames, render, siderDescriptionBox, siderImageBox, siderInfoFields, siderNameBox;
+    var cardChange, getCardUsage, getDeckName, infoNames, loadImageError, panelNames, render, renderDialog, siderDescriptionBox, siderImageBox, siderInfoFields, siderNameBox;
 
     panelNames = ['主卡组', '副卡组', '额外卡组', '临时卡组'];
 
@@ -314,7 +314,7 @@
         width: '24'
       });
       operaDownYdk.attr({
-        href: "https://my-card.in/decks.ydk?name=" + deckName + "&cards=" + cardUsage,
+        href: "https://my-card.in/decks/new.ydk?name=" + deckName + "&cards=" + cardUsage,
         title: '下载(ygopro格式)',
         target: '_blank'
       });
@@ -340,12 +340,18 @@
         title: '在ygopro中打开 (需要安装mycard)',
         target: '_blank'
       });
-      operaShare = $('<a></a>').css(Style.operaIco).css('background', 'none');
+      operaShare = $('<a title="分享" href="javascript:;"></a>').css(Style.operaIco).css('background', 'none');
       $('<img />').appendTo(operaShare).attr({
         src: 'http://my-card.in/assets/images/decks/share.png',
         alt: '',
-        title: '分享',
         width: '24'
+      });
+      operaShare.bind('click', function() {
+        if (dialog.isOpen) {
+          return false;
+        }
+        dialog.open();
+        return renderDialog($(dialog.panel), deckName, cardUsage);
       });
       operaWhatsThis = $('<a>?</a>').css(Style.operaIco).attr({
         'href': 'http://my-card.in/mycard/mycard.user.js.html',
@@ -398,6 +404,60 @@
       container.append(sider);
       $('body').append(container);
       return callback(container.height());
+    };
+
+    renderDialog = function(panel, deckName, cardUsage) {
+      var QRFieldset, QRImage, QRLegend, addThisPanel, body, btn, i, left, right, shareFieldset, shareLegend, title, urlFieldset, urlInfo, urlInput, urlLegend, urlShortBtn, _i, _len, _ref;
+
+      title = $('<div>share</div>').css(Style.shareTitle);
+      body = $('<div></div>').css(Style.shareBody);
+      left = $('<div></div>').css(Style.shareLeft);
+      right = $('<div></div>').css(Style.shareRight);
+      urlFieldset = $('<fieldset></fieldset>').css(Style.shareFieldset);
+      urlLegend = $('<legend align="center">URL</legend>').css('padding-top', '3px');
+      urlInput = $('<input />').attr({
+        'type': 'text',
+        'readonly': '1'
+      });
+      urlShortBtn = $('<button>获取短地址</button>');
+      urlInfo = $('<p>复制地址发送给你的好友</p>');
+      shareFieldset = $('<fieldset></fieldset>').css(Style.shareFieldset);
+      shareLegend = $('<legend align="center">share</legend>').css('padding-top', '3px');
+      addThisPanel = $('<div class="ddthis_toolbox addthis_default_style addthis_32x32_style"></div>').attr({
+        'addthis:url': "https://my-card.in/decks?name=" + deckName + "&cards=" + cardUsage
+      });
+      _ref = ['preferred_1', 'preferred_2', 'preferred_3', 'preferred_4', 'compact'];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        i = _ref[_i];
+        btn = $('<a></a>').addClass("addthis_button_" + i);
+        addThisPanel.append(btn);
+      }
+      addThisPanel.append($('<a class="addthis_counter addthis_bubble_style"></a>'));
+      urlFieldset.append(urlLegend);
+      urlFieldset.append(urlInput);
+      urlFieldset.append(urlShortBtn);
+      urlFieldset.append(urlInfo);
+      shareFieldset.append(shareLegend);
+      shareFieldset.append(addThisPanel);
+      left.append(urlFieldset);
+      left.append(shareFieldset);
+      QRFieldset = $('<fieldset></fieldset>').css(Style.shareFieldset);
+      QRLegend = $('<legend align="center">QR Code</legend>').css('padding-top', '3px');
+      QRImage = $('<img />').attr('src', 'https://chart.googleapis.com/chart?chs=171x171&cht=qr&chld=|0&chl=' + encodeURIComponent("https://my-card.in/decks?name=" + deckName + "&cards=" + cardUsage));
+      QRFieldset.append(QRLegend);
+      QRFieldset.append(QRImage);
+      right.append(QRFieldset);
+      body.append(left);
+      body.append(right);
+      panel.append(title);
+      panel.append(body);
+      if (typeof addthis === 'undefined') {
+        return $.getScript('http://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-504b398d148616ce&async=1', function() {
+          return addthis.init();
+        });
+      } else {
+        return addthis.init();
+      }
     };
 
     CardDeck.prototype.panel = [];
@@ -832,6 +892,8 @@
     return '';
   };
 
+  dialog = null;
+
   Main = (function() {
     var load;
 
@@ -850,6 +912,11 @@
     Main.prototype.start = function() {
       var build, handle, parse;
 
+      dialog = new kDialog({
+        hasOverlay: true,
+        width: 560,
+        height: 280
+      });
       parse = function() {
         var htmlContent;
 
@@ -1021,7 +1088,40 @@
       'text-align': 'center',
       'font-weight': 'bold'
     },
-    operaWhatsThis: 'font-weight'
+    operaWhatsThis: 'font-weight',
+    shareTitle: {
+      'padding': '.4em 1em',
+      'position': 'relative',
+      'background': '#DFDFDF',
+      'color': '#222',
+      'margin': 0,
+      'font-size': '16px',
+      'line-height': '20px'
+    },
+    shareBody: {
+      'height': '220px',
+      'font-size': '12px',
+      'position': 'relative',
+      'padding': '.5em 1em',
+      'color': '#222',
+      'padding-top': '20px'
+    },
+    shareLeft: {
+      'float': 'left',
+      'width': '250px',
+      'margin-left': '15px'
+    },
+    shareRight: {
+      'float': 'right',
+      'width': '250px'
+    },
+    shareFieldset: {
+      'height': '72px',
+      'padding-top': '25px',
+      'border': 'none',
+      'border-top': '1px solid #ddd',
+      'text-align': 'center'
+    }
   };
 
   Tree = (function() {
@@ -10679,3 +10779,169 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
 }
 
 })( window );
+var kDialog = function(o) {
+	var option = o || {};
+	var self = this;
+	var container,overlay,panel = null;
+	var divMaker = function(attribute, style, parentObj) {
+		attribute = attribute || {};
+		style = style || {};
+		var obj = document.createElement('div');
+		for (var key in attribute) {
+			if (key == 'class') {
+				obj.setAttribute('class', attribute[key]);
+				obj.setAttribute('className', attribute[key]);	// 兼容IE
+			} else {
+				obj.setAttribute(key, attribute[key]);
+			}
+		}
+		for (var key in style) {
+			obj.style[key] = style[key];
+		}
+		if (!parentObj) {
+			parentObj = document.body;
+		}
+		parentObj.appendChild(obj);
+		return obj;
+	}
+	var getWidth	= function() {
+		var width	= window.innerWidth;
+		if (width == undefined) { // IE
+			width	= document.documentElement.clientWidth;
+		}
+		return width;
+	}
+	var getHeight = function() {
+		var height	= window.innerHeight;
+		if (height == undefined) { //IE
+			height	= document.documentElement.clientHeight;
+			height	= ((window.screen.height - 100) < height) ? window.screen.height - 100 : height;
+		}
+		return height;
+	}
+	var bind = function bind(obj, action, func) {
+		if (window.addEventListener) {
+			obj.addEventListener( action, function(event) {
+				func(obj, event);
+			}, false);
+		} else if (window.attachEvent) { //IE
+			obj.attachEvent('on' +action, function(event) {
+				func(obj, event);
+			});
+		}
+	}
+	var unbind = function(obj, action, func) {
+		if (window.removeEventListener) {
+			obj.removeEventListener(action, func , false);
+		} else if (window.detachEvent) { //IE
+			obj.detachEvent(action, func);
+		}
+	}
+	self.isOpen = false;
+	self.miniWin = false;
+	self.open = function() {
+		var left, top, close, shadow;
+		if (self.isOpen) return;
+		self.isOpen = true;
+		option.width	= (option.width + 16) || 400;
+		option.height	= (option.height + 16) || 280;
+		option.title	= option.title || '';
+		left = (getWidth() - option.width) / 2;
+		if (left < 0) left = 0;
+		left += 'px';
+		top = (getHeight() - option.height) / 2;
+		if (top < 0) top = 0;
+		top += 'px';
+		if (option.hasOverlay) {
+			overlay = divMaker({}, {
+				'width':'100%',
+				'height':'100%',
+				'top':0, 
+				'left': 0,
+				'position': 'fixed',
+				'background-color':'#CCC',
+				'z-index':'1000',
+				'opacity':'0.3',
+				'filter': 'alpha(opacity=30)'
+			});
+		}
+		container = divMaker({}, {
+			'width':(option.width+'px'),
+			'height':(option.height+'px'),
+			'left':left,
+			'top':top,
+			'position':'absolute',
+			'z-index':'1001'
+		});
+		shadow	= divMaker({},{
+			'position':'absolute',
+			'z-index':'1001',
+			'width':'100%',
+			'height':'100%',
+			'background-color':'#333',
+			'opacity':'0.3',
+			'filter':'alpha(opacity=30)'
+		},container);
+		close	= divMaker({},{
+			'position':'absolute',
+			'z-index':'1003',
+			'width':'30px',
+			'height':'30px',
+			'top':'10px',
+			'right':'0',
+			'cursor':'pointer',
+			'font-size': '18px'
+		},container);
+		close.innerHTML = 'x';
+		panel	= divMaker({}, {
+			'width':(option.width-16+'px'),
+			'height':(option.height-16+'px'),
+			'left':'8px',
+			'top':'8px',
+			'position':'absolute',
+			'z-index':'1002',
+			'background':'#fff'
+		}, container);
+		if (option.url) {
+			var ifm	= document.createElement('iframe');
+			ifm.src	= option.url;
+			ifm.style.width		= '100%';
+			ifm.style.height	= '100%';
+			ifm.frameBorder		= 0;
+			panel.appendChild(ifm);
+		} else if (option.html) {
+			var s = new Array();
+			panel.innerHTML = option.html.replace(/<script[^>]+>([\s\S]+?)<\/script>/ig,function($1,$2){
+				s.push($2);
+				return '';
+			});
+			for (var i=0,l=s.length; i<l; i++) {
+				window[ "eval" ].call( window, s[i] );
+			}
+		} else if(option.text) {
+			panel.innerHTML = '<p style="line-height: '+(option.height-26)+'px; text-align:center;">'+option.text+'</p>';
+		}
+		bind(close, 'click', self.close);
+		self.panel = panel
+	} 
+	self.close = function() {
+		if (!self.isOpen) return;
+		self.isOpen = false;
+		if (overlay) {
+			overlay.parentNode.removeChild(overlay);
+		}
+		if (container) {
+			container.parentNode.removeChild(container);
+		}
+	}
+	self.resize = function(newWidth, newHeight) {
+		if (newWidth && newWidth > 0) {
+			container.style.width = newWidth + 16 + 'px';
+			panel.style.width = newWidth + 'px';
+		}
+		if (newHeight && newHeight > 0) {
+			container.style.height = newHeight + 16 + 'px';
+			panel.style.height = newHeight + 'px';
+		}
+	}
+}

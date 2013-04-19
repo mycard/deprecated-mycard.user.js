@@ -102,3 +102,31 @@ Style =
 		'font-weight': 'bold'
 	operaWhatsThis:
 		'font-weight'
+	shareTitle:
+		'padding': '.4em 1em'
+		'position': 'relative'
+		'background': '#DFDFDF'
+		'color': '#222'
+		'margin': 0
+		'font-size': '16px'
+		'line-height': '20px'
+	shareBody:
+		'height': '220px'
+		'font-size': '12px'
+		'position': 'relative'
+		'padding': '.5em 1em'
+		'color': '#222'
+		'padding-top': '20px'
+	shareLeft:
+		'float': 'left'
+		'width': '250px'
+		'margin-left': '15px'
+	shareRight:
+		'float': 'right'
+		'width': '250px'
+	shareFieldset:
+		'height': '72px'
+		'padding-top': '25px'
+		'border': 'none'
+		'border-top': '1px solid #ddd'
+		'text-align': 'center'

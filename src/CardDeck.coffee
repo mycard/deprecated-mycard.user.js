@@ -95,7 +95,7 @@ class CardDeck
 			alt: 'download ygopro格式'
 			width: '24'
 		operaDownYdk.attr
-			href: "https://my-card.in/decks.ydk?name=#{deckName}&cards=#{cardUsage}"
+			href: "https://my-card.in/decks/new.ydk?name=#{deckName}&cards=#{cardUsage}"
 			title: '下载(ygopro格式)'
 			target: '_blank'
 		# 下载(ocgsoft格式)
@@ -119,12 +119,16 @@ class CardDeck
 			title: '在ygopro中打开 (需要安装mycard)'
 			target: '_blank'
 		# 分享
-		operaShare = $('<a></a>').css(Style.operaIco).css('background', 'none')
+		operaShare = $('<a title="分享" href="javascript:;"></a>').css(Style.operaIco).css('background', 'none')
 		$('<img />').appendTo(operaShare).attr
 			src: 'http://my-card.in/assets/images/decks/share.png'
 			alt: ''
-			title: '分享'
 			width: '24'
+		operaShare.bind 'click', ()->
+			return false if dialog.isOpen
+			dialog.open()
+			renderDialog $(dialog.panel), deckName, cardUsage
+
 		# 这是什么
 		operaWhatsThis = $('<a>?</a>').css(Style.operaIco).attr
 			'href': 'http://my-card.in/mycard/mycard.user.js.html'
@@ -169,6 +173,56 @@ class CardDeck
 		container.append sider
 		$('body').append container
 		callback container.height()
+
+	renderDialog = (panel, deckName, cardUsage)->
+		title = $('<div>share</div>').css Style.shareTitle
+		body = $('<div></div>').css Style.shareBody
+		left = $('<div></div>').css Style.shareLeft
+		right = $('<div></div>').css Style.shareRight
+
+		urlFieldset = $('<fieldset></fieldset>').css Style.shareFieldset
+		urlLegend = $('<legend align="center">URL</legend>').css 'padding-top', '3px'
+		urlInput = $('<input />').attr
+			'type': 'text'
+			'readonly': '1'
+		urlShortBtn = $('<button>获取短地址</button>')
+		urlInfo = $('<p>复制地址发送给你的好友</p>')
+
+		shareFieldset = $('<fieldset></fieldset>').css Style.shareFieldset
+		shareLegend = $('<legend align="center">share</legend>').css 'padding-top', '3px'
+		addThisPanel = $('<div class="ddthis_toolbox addthis_default_style addthis_32x32_style"></div>').attr
+			'addthis:url': "https://my-card.in/decks?name=#{deckName}&cards=#{cardUsage}"
+		for i in ['preferred_1', 'preferred_2', 'preferred_3', 'preferred_4', 'compact']
+			btn = $('<a></a>').addClass "addthis_button_#{i}"
+			addThisPanel.append btn
+		addThisPanel.append $ '<a class="addthis_counter addthis_bubble_style"></a>'
+		urlFieldset.append urlLegend
+		urlFieldset.append urlInput
+		urlFieldset.append urlShortBtn
+		urlFieldset.append urlInfo
+		shareFieldset.append shareLegend
+		shareFieldset.append addThisPanel
+		left.append urlFieldset
+		left.append shareFieldset
+
+		QRFieldset = $('<fieldset></fieldset>').css Style.shareFieldset
+		QRLegend = $('<legend align="center">QR Code</legend>').css 'padding-top', '3px'
+		QRImage = $('<img />').attr 'src', 'https://chart.googleapis.com/chart?chs=171x171&cht=qr&chld=|0&chl=' + encodeURIComponent("https://my-card.in/decks?name=#{deckName}&cards=#{cardUsage}")
+		QRFieldset.append QRLegend
+		QRFieldset.append QRImage
+		right.append QRFieldset
+
+		body.append left
+		body.append right
+
+		panel.append title
+		panel.append body
+
+		if typeof addthis is 'undefined'
+			$.getScript 'http://s7.addthis.com/js/300/addthis_widget.js#pubid=ra-504b398d148616ce&async=1', ()->
+				addthis.init()
+		else
+			addthis.init()
 
 	panel: []	# 4个卡区的数据
 	data: null
