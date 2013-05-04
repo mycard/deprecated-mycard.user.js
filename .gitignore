@@ -2,6 +2,7 @@
 ## Jetbrains
 #################
 /.idea/
+/node_modules/
 
 ############
 ## Windows
